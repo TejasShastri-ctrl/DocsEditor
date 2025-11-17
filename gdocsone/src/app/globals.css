@@ -114,6 +114,16 @@ body {
 
 .tiptap {
 
+  a{
+    color: #0000FF;
+    cursor: pointer;
+
+    &:hover {
+      /* color: var(--purple-contrast) */
+      @apply underline
+    }
+  }
+
 /* image styling. Image dragging already provided by starter kit */
  img {
     display: block;

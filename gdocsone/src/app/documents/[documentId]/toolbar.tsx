@@ -1,13 +1,18 @@
 //  because we are using interactive things inside
 "use client"
 
+import { useState } from "react";
+
+
 import { useEditorStore } from "@/app/store/use-editor-store";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
 import { useEditorState } from "@tiptap/react";
 
-import { BoldIcon, ChevronDownIcon, ItalicIcon, ListTodoIcon, LucideIcon, MessageSquarePlusIcon, PrinterIcon, Redo2Icon, RemoveFormattingIcon, SpellCheckIcon, UnderlineIcon, Undo2Icon } from "lucide-react";
+import { type ColorResult, CirclePicker, SketchPicker } from "react-color";
+
+import { BoldIcon, ChevronDownIcon, ItalicIcon, Link2Icon, ListTodoIcon, LucideIcon, MessageSquarePlusIcon, PrinterIcon, Redo2Icon, RemoveFormattingIcon, SpellCheckIcon, UnderlineIcon, Undo2Icon } from "lucide-react";
 
 import {
     DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
@@ -16,11 +21,165 @@ import {
 import {type Level} from "@tiptap/extension-heading";
 
 
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+
+
+//! PAY ATTENTION TO THIS FUNCTION
+const ImageButton = () => {
+    const {editor} = useEditorStore();
+    const [isDialogOpen, setIsDailogOpen] = useState(false);
+    const [imgurl, setimgurl] = useState(editor?.getAttributes("link").href || "")
+
+    const onChange = (src: string) => {
+        editor?.chain().focus().setImage({src}).run();
+    }
+
+    //! PAY ATTENTION
+    const onUpload = () => {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = "image";
+
+        input.onchange = (e) => {
+            const file = (e.target as HTMLInputElement).files?.[0];
+            if(file) {
+                const ImageUrl = URL.createObjectURL(file);
+                onChange(ImageUrl);
+            }
+        }
+
+        input.click();
+    }
+
+    const handleUrlSubmit = () => {
+        if(imgurl) {
+            onChange(imgurl);
+            setimgurl("");
+            setIsDailogOpen(false);
+        }
+    }
+
+    return (
+        <DropdownMenu onOpenChange={(open) => {
+            if(open) {
+                setValue(editor?.getAttributes("image").href || "");
+            }
+        }}>
+            <DropdownMenuTrigger asChild>
+                <button
+                // onClick={() => setValue(editor?.getAttributes("link").href)} 
+                className="h-7 min-w-7 shrink-0 flex flex-col items-center justify-center rounded-sm hover:bg-neutral-200/80 px-1.5 overflow-hidden text-small">
+                <Link2Icon className="size-4" />
+                </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="p-2.5 flex items-center gap-x-2">
+                <Input placeholder="Paste Link" value={value} onChange={(e) => setValue(e.target.value)}/>
+                <Button onClick={() => onChange(value)} disabled={value === ''}>
+                    Apply
+                </Button>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    )
+}
+
+
+
+
+const LinkButton = () => {
+    const {editor} = useEditorStore();
+    const [value, setValue] = useState(editor?.getAttributes("link").href || "")
+
+    console.log(editor?.getAttributes("link").href, "Testing Link")
+
+    const onChange = (href: string) => {
+        editor?.chain().focus().extendMarkRange("link").setLink({href}).run();
+        setValue("");
+    }
+
+    return (
+        <DropdownMenu onOpenChange={(open) => {
+            if(open) {
+                setValue(editor?.getAttributes("link").href || "");
+            }
+        }}>
+            <DropdownMenuTrigger asChild>
+                <button
+                // onClick={() => setValue(editor?.getAttributes("link").href)} 
+                className="h-7 min-w-7 shrink-0 flex flex-col items-center justify-center rounded-sm hover:bg-neutral-200/80 px-1.5 overflow-hidden text-small">
+                <Link2Icon className="size-4" />
+                </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="p-2.5 flex items-center gap-x-2">
+                <Input placeholder="Paste Link" value={value} onChange={(e) => setValue(e.target.value)}/>
+                <Button onClick={() => onChange(value)} disabled={value === ''}>
+                    Apply
+                </Button>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    )
+}
+
+
 
 interface ToolbarButtonProps {
     onClick?: () => void;
     isActive?: boolean;
     icon: LucideIcon
+}
+
+const TextColorButton = () => {
+    const { editor } = useEditorStore();
+    const value = editor?.getAttributes("textStyle").color || "#000000";
+    const onChange = (color: ColorResult) => {
+        editor?.chain().focus().setColor(color.hex).run();
+    }
+
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <button className="h-7 min-w-7 shrink-0 flex flex-col items-center justify-center rounded-sm hover:bg-neutral-200/80 px-1.5 overflow-hidden text-small">
+                <span className="text-xs">A</span>
+                <div className="h-0.2 w-full" style={{ backgroundColor: value}}/>
+                </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="p-2.5 flex flex-col items-center gap-4">
+                <div className="w-[100px] whitespace-nowrap overflow-x-auto border px-2 rounded-2xl border-neutral-500 text-sm font-semibold text-neutral-500">
+                    Whitespace-nowrap is essential to make sure the content is written in one single line instead of a breaking them vertically
+                </div>
+                <CirclePicker color={value} onChange={onChange}/>
+                <div className="w-full h-[2px] bg-neutral-300 hover:bg-blue-400 transition cursor-pointer"/>
+                <SketchPicker color={value} onChange={onChange}/>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    )
+}
+
+const HighlightColorButton = () => {
+    const { editor } = useEditorStore();
+    const value = editor?.getAttributes("textStyle").color || "#000000";
+    const onChange = (color: ColorResult) => {
+        editor?.chain().focus().setHighlight({color: color.hex}).run();
+    }
+
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <button className="h-7 min-w-7 shrink-0 flex flex-col items-center justify-center rounded-sm hover:bg-neutral-200/80 px-1.5 overflow-hidden text-small">
+                <span className="text-xs">A</span>
+                <div className="h-0.2 w-full" style={{ backgroundColor: value}}/>
+                </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="p-2.5 flex flex-col items-center gap-4">
+                <div className="border px-2 rounded-2xl border-neutral-500 text-sm font-semibold text-neutral-500">
+                    Standard Values
+                </div>
+                <CirclePicker color={value} onChange={onChange}/>
+                <div className="w-full h-[2px] bg-neutral-300 hover:bg-blue-400 transition cursor-pointer"/>
+                <SketchPicker color={value} onChange={onChange}/>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    )
 }
 
 
@@ -254,10 +413,13 @@ export const Toolbar = () => {
             ))}
 
             {/* text color */}
+            <TextColorButton/>
 
             {/* highlight color */}
             <Separator orientation="vertical" className="h-6 bg-neutral-300" />
             {/* Link */}
+
+            <LinkButton/>
             {/* Image */}
             {/* Align */}
             {/* Line height */}

@@ -24,6 +24,11 @@ import TableCell from '@tiptap/extension-table-cell'
 import TableHeader from '@tiptap/extension-table-header'
 import TableRow from '@tiptap/extension-table-row'
 
+import { Color } from '@tiptap/extension-color'
+import Highlight from '@tiptap/extension-highlight'
+
+import Link from '@tiptap/extension-link'
+
 import { useEditorStore } from '@/app/store/use-editor-store'
 
 export const Editor = () => {
@@ -68,10 +73,16 @@ export const Editor = () => {
             }), TaskList,
             Table,
             TableCell,
+            TextStyle, Color,
             TableHeader,
             TableRow,
             Image,
-            ImageResize
+            ImageResize,
+            Link.configure({
+              openOnClick: false,
+              autolink: true,
+              defaultProtocol: "https"
+            })
         ],
         content: `
         <table>
