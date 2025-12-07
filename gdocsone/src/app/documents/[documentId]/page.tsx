@@ -6,25 +6,28 @@
 // been provided to convert all values async
 
 import { Editor } from "./editor";
+import { Navbar } from "./navbar";
 import { Toolbar } from "./toolbar";
 
-
 interface DocIDPageProps {
-    params : Promise<{ documentId: string}>;
+    params: Promise<{ documentId: string }>;
 }
 
-const DocID = async ({params}: DocIDPageProps) => {
-    const awaitedParams = await params;
-    const docID = awaitedParams.documentId;
+const DocID = async ({ params }: DocIDPageProps) => {
+    const { documentId } = await params;
 
-    console.log(docID);
     return (
-        <div className="min-h-screen bg-[#FAFBFD]">
-        <Toolbar />
-        <Editor />
+        <div className="flex flex-col h-screen w-full bg-[#FAFBFD]">
+            <div className="flex flex-col px-4 pt-2 gap-y-2 top-0 left-0 right-0 z-10 bg-[#FAFBFD] print:hidden">
+                <Navbar />
+                <Toolbar />
+            </div>
+
+            <div className="pt-[114px print:pt-0">
+                <Editor />
+            </div>
         </div>
-        
-    )
+    );
 }
 
 export default DocID;
