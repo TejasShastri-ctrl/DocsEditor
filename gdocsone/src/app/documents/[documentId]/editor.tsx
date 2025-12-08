@@ -38,8 +38,14 @@ import { FontSizeExtension } from '@/extensions/font-size'
 
 import { LineHeightExtension } from '@/extensions/line-height'
 
+import { useLiveblocksExtension } from '@liveblocks/react-tiptap'
+import { off } from 'process'
+import { Threads } from './threads'
+
 
 export const Editor = () => {
+
+  const liveblocks = useLiveblocksExtension();
 
   const { setEditor } = useEditorStore();
 
@@ -74,11 +80,17 @@ export const Editor = () => {
         class: "focus:outline-none print:border-0 bg-white border border-[#C7C7C7] flex flex-col min-h-[1054px] w-[816px] pt-10 pr-14 pb-10 cursor-text"
       }
     },
-    extensions: [StarterKit, FontSizeExtension,
+
+    extensions: [StarterKit.configure({
+      history: false //Because liveblocks has its own history, which is what I have enabled
+    })
+      
+      , FontSizeExtension,
 
       LineHeightExtension.configure({
         types: ["heading", "paragraph"], defaultLineHeight: "normal",
       }),
+      liveblocks,
       Underline, FontFamily, TextStyle,
       TaskItem.configure({
         nested: true
@@ -106,6 +118,7 @@ export const Editor = () => {
     <div className='size-full overflow-x-auto bg-[#F9FBFD] px-4 print:p-0 print:bg-white print:overflow-visible'>
       <div className='min-w-max flex justify-center w-[816px] py-4 print:py-0 mx-auto print:w-full print:min-w-0'>
         <EditorContent editor={editor} />
+        <Threads editor={editor} />
       </div>
     </div>
   );
