@@ -10,14 +10,38 @@ import {
 
 import { useParams } from "next/navigation";
 
+
+import { LOADER_MESSAGES } from "./message-loader";
+import { useMemo } from "react";
+import { FullScreenLoader } from "@/components/fullscreen-loader";
+
+
+
+
+
+export function getRandomLoaderMessage() {
+  const idx = Math.floor(Math.random() * LOADER_MESSAGES.length);
+  return LOADER_MESSAGES[idx];
+}
+
+const message = getRandomLoaderMessage();
+
+
+
 export function Room({ children }: { children: ReactNode }) {
 
   const params = useParams();
+  
+  console.log("DEBUG: Current URL ID is:", params.documentId);
+
 
   return (
-    <LiveblocksProvider publicApiKey={"pk_dev_eL72b5DprG5iPDVhRcFqJd3w6D9wqZTH5Fb59w8zQxG_rDK21zQTh6-g-LnlWlyu"}>
+    <LiveblocksProvider 
+    throttle={16} 
+      authEndpoint="/api/liveblocks-auth"
+      >
       <RoomProvider id={params.documentId as string}>
-        <ClientSideSuspense fallback={<div>Loading…</div>}>
+        <ClientSideSuspense fallback={<FullScreenLoader label={message}/>}>
           {children}
         </ClientSideSuspense>
       </RoomProvider>
