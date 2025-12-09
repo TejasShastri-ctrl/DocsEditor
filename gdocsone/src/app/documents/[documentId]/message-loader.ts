@@ -1,12 +1,10 @@
 export const LOADER_MESSAGES = [
-  "Stay focused. Small steps compound fast.",
-  "Progress beats perfection — always.",
+  "Small steps compound fast",
+  "Little toe's hitbox is bigger than the model",
   "You're closer than you think.",
-  "Consistency is a superpower. Use it.",
-  "Your future self is watching. Make them proud.",
-  "Delay the impulse; act on the intention.",
-  "You’ve handled worse — keep going.",
-  "Deep work pays dividends nobody sees at first.",
-  "Discomfort is the cost of growth.",
-  "Take a breath. Then proceed with precision."
+  "Just a second",
+  "Can't decide what class you want to be? Don't worry! That is already decided for you.",
+  "Tired? Try sleeping",
+  "Loading Screen tip - Money can be exchanged for goods and services",
+  "Do not get worried after reading 'Dox'"
 ];

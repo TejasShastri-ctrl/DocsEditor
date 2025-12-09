@@ -51,7 +51,7 @@ export const TempGallery = () => {
                                 )}>
                                     <button
                                         disabled={isCreating}
-                                        onClick={() => { onTemplateClick(template.label, "") }}
+                                        onClick={() => { onTemplateClick(template.label, template.initialContent) }}
                                         style={{
                                             backgroundImage: `url(${template.imgurl})`,
                                             backgroundSize: "cover",

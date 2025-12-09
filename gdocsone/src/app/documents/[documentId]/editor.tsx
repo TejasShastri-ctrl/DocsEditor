@@ -43,9 +43,19 @@ import { off } from 'process'
 import { Threads } from './threads'
 
 
-export const Editor = () => {
 
-  const liveblocks = useLiveblocksExtension();
+interface EditorProps {
+  initialContent?: string | undefined
+}
+
+
+
+
+export const Editor = ({initialContent}: EditorProps) => {
+
+
+  // Last minute initialContent fix
+  const liveblocks = useLiveblocksExtension({initialContent});
 
   const { setEditor } = useEditorStore();
 

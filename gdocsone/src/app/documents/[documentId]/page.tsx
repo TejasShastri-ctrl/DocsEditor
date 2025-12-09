@@ -9,48 +9,67 @@ import { Editor } from "./editor";
 import { Navbar } from "./navbar";
 import { Room } from "./room";
 import { Toolbar } from "./toolbar";
+import { DocComponent } from "./document";
 
-interface DocIDPageProps {
-    params: Promise<{ documentId: string }>;
-}
+import {auth} from '@clerk/nextjs/server'
 
-const DocID = async ({ params }: DocIDPageProps) => {
-    const { documentId } = await params;
-
-    return (
-        <>
-            <div className="flex fixed flex-col px-4 pt-2 gap-y-2 top-0 left-0 right-0 z-10 bg-[#FAFBFD] print:hidden">
-                <Navbar />
-                <Toolbar />
-            </div>
-            <div className="flex flex-col h-screen w-full overflow-auto bg-[#FAFBFD]">
-                <div className="pt-[114px] print:pt-0">
-                    <Room>
-                        <Editor />
-                    </Room>
-                </div>
-            </div>
-        </>
-
-    );
-}
-
-export default DocID;
+import { preloadQuery } from "convex/nextjs";
+import { api } from "../../../../convex/_generated/api";
+import { Id } from "../../../../convex/_generated/dataModel";
+// import Error from "next/error";
 
 
+//! Previous version - the document saving was all room-based. I was misled all this time
 // interface DocIDPageProps {
-//     params: { documentId: string };
+//     params: Promise<{ documentId: string }>;
 // }
 
-// const DocIDPage = ({ params }: DocIDPageProps) => {
-//     const docIDfinal = params.documentId;
-//     console.log(docIDfinal);
+// const DocID = async ({ params }: DocIDPageProps) => {
+//     const { documentId } = await params;
 
 //     return (
-//         <div>
-//             all manner of folk paying social calls. DocID is - {docIDfinal}
-//         </div>
-//     );
-// };
-// export default DocIDPage;
+//         <>
+//             <div className="flex fixed flex-col px-4 pt-2 gap-y-2 top-0 left-0 right-0 z-10 bg-[#FAFBFD] print:hidden">
+//                 <Navbar />
+//                 <Toolbar />
+//             </div>
+//             <div className="flex flex-col h-screen w-full overflow-auto bg-[#FAFBFD]">
+//                 <div className="pt-[114px] print:pt-0">
+//                     <Room>
+//                         <Editor />
+//                     </Room>
+//                 </div>
+//             </div>
+//         </>
 
+//     );
+// }
+
+// export default DocID;
+
+
+interface DocIDPageProps {
+    params: Promise<{documentId: string}>;
+}
+
+const DocID = async ({params}: DocIDPageProps) => {
+    const {documentId} = await params;
+    
+    const {getToken} = await auth();
+    const token = await getToken({template: "convex"}) ?? undefined;
+
+    if(!token) {
+        throw new Error("Unauthorized")
+    }
+
+    const typedDocumentId = documentId as Id<"documents">;
+    // one time thing I guess. Fly by nothing to see here
+
+    const preloadedDoc = await preloadQuery(
+        api.documents.getById, {id: typedDocumentId}, {token}
+    )
+
+    return <DocComponent preloadedDocument={preloadedDoc}/>
+}
+
+export default DocID
