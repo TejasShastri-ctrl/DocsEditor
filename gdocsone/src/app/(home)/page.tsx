@@ -11,6 +11,8 @@ import { TempGallery } from './template-gallery'
 import { DocumentsTable } from './documents-table'
 import { useSearchParam } from '@/hooks/use-search-params'
 
+
+
 const Home = () => {
 
   const[search] = useSearchParam(); //created this hook, go over it again

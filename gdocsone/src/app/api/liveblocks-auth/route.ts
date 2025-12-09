@@ -1,6 +1,6 @@
 import { Liveblocks } from '@liveblocks/node';
 import { ConvexHttpClient } from 'convex/browser';
-import { auth, currentUser } from '@clerk/nextjs/server';
+import { auth, clerkClient, currentUser } from '@clerk/nextjs/server';
 import { api } from '../../../../convex/_generated/api';
 
 // 1. Defensive Environment Variable Loading
@@ -19,7 +19,7 @@ const liveblocks = new Liveblocks({
 export async function POST(req: Request) {
   try {
     // 2. Authentication Check
-    const { sessionClaims } = await auth();
+    const { sessionClaims, userId } = await auth();
     if (!sessionClaims) {
       return new Response("Unauthorized: No session", { status: 401 });
     }
@@ -39,14 +39,38 @@ export async function POST(req: Request) {
 
     const isOwner = document.ownerId === user.id;
 
-    const isOrganizationMember = 
-      !!(sessionClaims.org_id && document.organizationId === sessionClaims.org_id);
+
+    //! //////////// Debugging area
+
+
+    const client = await clerkClient();
+
+    const memberships = await client.users.getOrganizationMembershipList({
+      userId: userId,
+    });
+    console.log('clerk user API -> organization membership list for this user : ', { memberships });
+
+    //! //////////// Debugging area
+
+
+
+    // Manual membership ID confirmation.
+    const isOrganizationMember = memberships.data.some(
+      (mem) => mem.organization.id === document.organizationId
+    );
+
+    console.log('sessionclaims ORG ID:', sessionClaims.org_id, " document organization ID - ", document.organizationId)
 
     if (!isOwner && !isOrganizationMember) {
       return new Response("Unauthorized: You do not have access to this room", { status: 403 });
     }
 
-    console.log('liveblocks debugging : ', {isOwner, isOrganizationMember})
+
+
+
+
+
+    console.log('liveblocks debugging : ', { isOwner, isOrganizationMember })
 
     // 7. Liveblocks Session
     const session = liveblocks.prepareSession(user.id, {
@@ -57,7 +81,7 @@ export async function POST(req: Request) {
     });
 
     session.allow(room, session.FULL_ACCESS);
-    
+
     const { body, status } = await session.authorize();
 
     return new Response(body, { status });

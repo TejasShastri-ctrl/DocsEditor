@@ -14,17 +14,36 @@ import { BoldIcon, FileIcon, FileJson2Icon, FilePenIcon, FilePlus2Icon, FilePlus
 import { BsFilePdfFill } from 'react-icons/bs'
 import { useEditorStore } from '@/app/store/use-editor-store'
 import { OrganizationSwitcher, UserButton } from '@clerk/nextjs'
+import { useQuery } from 'convex/react'
+import { useParams } from 'next/navigation'
+import { api } from '../../../../convex/_generated/api'
+import { Id } from '../../../../convex/_generated/dataModel'
+import { RenameDialog } from '@/components/rename-dialog'
+import { Inbox } from './inbox'
 
 export const Navbar = () => {
 
-    const {editor} = useEditorStore();
+    const { editor } = useEditorStore();
 
-    const insertTable = ({rows, cols}: {rows: number, cols: number}) => {
+    const insertTable = ({ rows, cols }: { rows: number, cols: number }) => {
         editor?.chain()
-        .focus()
-        .insertTable({rows, cols, withHeaderRow: false})
-        .run()
+            .focus()
+            .insertTable({ rows, cols, withHeaderRow: false })
+            .run()
     };
+
+    const params = useParams();
+    const documentId = params.documentId as Id<"documents">;
+    const document = useQuery(api.documents.getById, { id: documentId });
+
+    if (document === undefined) {
+        return <p>Loading...</p>;
+    }
+
+    // 2. Not Found / Auth Guard
+    if (document === null) {
+        return <p>Not Found</p>;
+    }
 
     return (
         <nav className='flex items-center justify-between'>
@@ -34,7 +53,7 @@ export const Navbar = () => {
                 </Link>
                 <div className='flex flex-col'>
                     {/* document input */}
-                    <DocumentInput />
+                    <DocumentInput title={document!.title} />
                     {/* menu bar */}
                     <div className='flex'>
                         <Menubar className='border-none bg-transparent shadow-none h-auto p-0'>
@@ -50,22 +69,22 @@ export const Navbar = () => {
                                         </MenubarSubTrigger>
                                         <MenubarSubContent>
                                             <MenubarItem>
-                                                <FileJson2Icon className='size-4 mr-2'/>
+                                                <FileJson2Icon className='size-4 mr-2' />
                                                 JSON
                                             </MenubarItem>
 
                                             <MenubarItem>
-                                                <GlobeIcon className='size-4 mr-2'/>
+                                                <GlobeIcon className='size-4 mr-2' />
                                                 HTML
                                             </MenubarItem>
-                                            
+
                                             <MenubarItem>
-                                                <BsFilePdfFill className='size-4 mr-2'/>
+                                                <BsFilePdfFill className='size-4 mr-2' />
                                                 PDF
                                             </MenubarItem>
 
                                             <MenubarItem>
-                                                <FileTextIcon className='size-4 mr-2'/>
+                                                <FileTextIcon className='size-4 mr-2' />
                                                 Text
                                             </MenubarItem>
                                         </MenubarSubContent>
@@ -76,10 +95,12 @@ export const Navbar = () => {
                                         Create New Document
                                     </MenubarItem>
                                     <MenubarSeparator />
-                                    <MenubarItem>
-                                        <FilePenIcon className='size-4 mr-2' />
-                                        Rename
-                                    </MenubarItem>
+                                    <RenameDialog documentId={documentId} initialTitle={document!.title}>
+                                        <MenubarItem onSelect={(e) => e.preventDefault()}>
+                                            <FilePenIcon className='size-4 mr-2' />
+                                            Rename
+                                        </MenubarItem>
+                                    </RenameDialog>
                                     <MenubarSeparator />
                                     <MenubarItem>
                                         <Trash2Icon className='size-4 mr-2' />
@@ -102,12 +123,12 @@ export const Navbar = () => {
                                 </MenubarTrigger>
                                 <MenubarContent>
                                     <MenubarItem onClick={() => editor?.chain().focus().undo().run()}>
-                                        <Undo2Icon className='size-4 mr-2'/>
+                                        <Undo2Icon className='size-4 mr-2' />
                                         Undo
                                     </MenubarItem>
-                                    
+
                                     <MenubarItem onClick={() => editor?.chain().focus().undo().run()}>
-                                        <Redo2Icon className='size-4 mr-2'/>
+                                        <Redo2Icon className='size-4 mr-2' />
                                         Redo
                                     </MenubarItem>
 
@@ -124,16 +145,16 @@ export const Navbar = () => {
                                     <MenubarSub>
                                         <MenubarSubTrigger>Table</MenubarSubTrigger>
                                         <MenubarSubContent>
-                                            <MenubarItem onClick={() => insertTable({rows:1, cols:1})}>
+                                            <MenubarItem onClick={() => insertTable({ rows: 1, cols: 1 })}>
                                                 1 x 1
                                             </MenubarItem>
-                                            <MenubarItem onClick={() => insertTable({rows:2, cols:2})}>
+                                            <MenubarItem onClick={() => insertTable({ rows: 2, cols: 2 })}>
                                                 2 x 2
                                             </MenubarItem>
-                                            <MenubarItem onClick={() => insertTable({rows:3, cols:3})}>
+                                            <MenubarItem onClick={() => insertTable({ rows: 3, cols: 3 })}>
                                                 3 x 3
                                             </MenubarItem>
-                                            <MenubarItem onClick={() => insertTable({rows:4, cols:4})}>
+                                            <MenubarItem onClick={() => insertTable({ rows: 4, cols: 4 })}>
                                                 4 x 4
                                             </MenubarItem>
                                         </MenubarSubContent>
@@ -154,15 +175,15 @@ export const Navbar = () => {
                                             Text
                                         </MenubarSubTrigger>
                                         <MenubarSubContent>
-                                            <MenubarItem>
+                                            <MenubarItem onClick={() => editor?.chain().focus().toggleBold().run()}>
                                                 <BoldIcon className='size-4 mr-2' />
                                                 Bold
                                             </MenubarItem>
-                                            <MenubarItem>
+                                            <MenubarItem onClick={() => editor?.chain().focus().toggleItalic().run()}>
                                                 <ItalicIcon className='size-4 mr-2' />
                                                 Italic
                                             </MenubarItem>
-                                            <MenubarItem>
+                                            <MenubarItem onClick={() => editor?.chain().focus().toggleUnderline().run()}>
                                                 <UnderlineIcon className='size-4 mr-2' />
                                                 Underline
                                             </MenubarItem>
@@ -181,16 +202,18 @@ export const Navbar = () => {
             </div>
             <div className="flex gap-3 items-center pl-6">
 
-          {/*//! Good implementation in the way that a new JWT token gets generated every time you switch org because the page 'reloads' */}
-          <OrganizationSwitcher
-            afterCreateOrganizationUrl="/"
-            afterLeaveOrganizationUrl="/"
-            afterSelectOrganizationUrl="/"
-            afterSelectPersonalUrl="/"
-          /> {/*Clerk is fucking goated*/}
-          <UserButton />
+                <Inbox/>
 
-        </div>
+                {/*//! Good implementation in the way that a new JWT token gets generated every time you switch org because the page 'reloads' */}
+                <OrganizationSwitcher
+                    afterCreateOrganizationUrl="/"
+                    afterLeaveOrganizationUrl="/"
+                    afterSelectOrganizationUrl="/"
+                    afterSelectPersonalUrl="/"
+                /> {/*Clerk is fucking goated*/}
+                <UserButton />
+
+            </div>
         </nav>
     )
 }
